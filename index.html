@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcam Display Stream</title>
+
+    <style>
+
+        h1{
+            font-family: sans-serif;
+            color: rgb(22, 23, 24);
+        }
+        body{
+            margin: 50px;
+            background-color:rgb(112, 112, 112)
+        }
+
+        #videoElement{
+            width:500px;
+            height:375px;
+            background-color: grey;
+            transition: transform 0.15s ease, filter 0.15s ease;
+            transform-origin: center center;
+        }
+        #container{
+            margin: 0px auto;
+            width: 500px;
+            height: 375px;
+            border: 10px rgb(34, 34, 34) solid;
+        }
+        .scan-button {
+        font-size: 1.5rem;
+        color: #fafafa;
+        text-transform: uppercase;
+        padding: 10px 20px;
+        border-radius: 10px;
+        border: 2px solid #fafafa;
+        background: #252525;
+        box-shadow: 3px 3px #fafafa;
+        cursor: pointer;
+        margin: 35px 0;
+        }
+
+        .scan-button:active {
+        box-shadow: none;
+        transform: translate(3px, 3px);
+        }
+
+    </style>
+</head>
+<body>
+    <div id="container">
+        <video autoplay="true" id="videoElement"></video>
+    </div>
+    <canvas id="canvasElement">
+
+    </canvas>
+
+    <button class="scan-button" id="scanBtn">Scan</button>
+
+    <script>
+        // Initialize variables
+    let video = document.querySelector("#videoElement");
+    const canvas = document.getElementById('canvasElement');
+    const scanBtn = document.getElementById('scanBtn');
+
+        if(navigator.mediaDevices.getUserMedia){ //if the user media is supported
+            navigator.mediaDevices.getUserMedia({ video:true }) //
+            .then(function(stream){
+                video.srcObject = stream;
+                // allow inline playback on some mobile browsers
+                video.playsInline = true;
+                // update visual state when controls change
+                function horizontalFlip(){
+                    video.style.transform = `scaleX(${-1}) scaleY(${1})`;
+                }
+                horizontalFlip();
+            })
+            .catch (function(error){
+                console.log("Something went wrong!");
+            })
+        }else{
+            console.log("getUserMedia not supported on your browser!");
+        }
+    function handleScan(){
+        
+    }
+    </script>
+</body>
+</html>
