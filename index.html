@@ -4,66 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Webcam Display Stream</title>
+    <link rel="stylesheet" href="styles/index.css">
 
-    <style>
-
-        h1{
-            font-family: sans-serif;
-            color: rgb(22, 23, 24);
-        }
-        body{
-            margin: 50px;
-            background-color:rgb(112, 112, 112)
-        }
-
-        #videoElement{
-            width:500px;
-            height:375px;
-            background-color: grey;
-            transition: transform 0.15s ease, filter 0.15s ease;
-            transform-origin: center center;
-        }
-        #container{
-            margin: 0px auto;
-            width: 500px;
-            height: 375px;
-            border: 10px rgb(34, 34, 34) solid;
-        }
-        .scan-button {
-        font-size: 1.5rem;
-        color: #fafafa;
-        text-transform: uppercase;
-        padding: 10px 20px;
-        border-radius: 10px;
-        border: 2px solid #fafafa;
-        background: #252525;
-        box-shadow: 3px 3px #fafafa;
-        cursor: pointer;
-        margin: 35px 0;
-        }
-
-        .scan-button:active {
-        box-shadow: none;
-        transform: translate(3px, 3px);
-        }
-
-    </style>
 </head>
 <body>
     <div id="container">
         <video autoplay="true" id="videoElement"></video>
+        <canvas id="canvasElement"> </canvas>
     </div>
-    <canvas id="canvasElement">
-
-    </canvas>
 
     <button class="scan-button" id="scanBtn">Scan</button>
+    <div id="result"></div>
 
     <script>
         // Initialize variables
+    const resultDiv = document.getElementById('result');
     let video = document.querySelector("#videoElement");
     const canvas = document.getElementById('canvasElement');
     const scanBtn = document.getElementById('scanBtn');
+
+    scanBtn.addEventListener('click', handleScan);
 
         if(navigator.mediaDevices.getUserMedia){ //if the user media is supported
             navigator.mediaDevices.getUserMedia({ video:true }) //
@@ -84,8 +44,95 @@
             console.log("getUserMedia not supported on your browser!");
         }
     function handleScan(){
-        
+        const ctx = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        console.log("Scan Worked! I hope!")
+ 
+        //convert the canvas to a Base64 String
+        const fullDataURL = canvas.toDataURL('image/jpeg');
+        const imageBase64 = fullDataURL.split(',')[1];
+        // MIME type specifies the file format (PNG image in this case)
+        const mimeType = 'image/jpeg';
+
+        findBin(imageBase64,mimeType);
     }
-    </script>
+
+    async function findBin(base64Image, mimeType){
+        if(resultDiv){
+            resultDiv.innerHTML = "Analyzing...";
+        }
+
+        if(!window.ai){
+            if(resultDiv) resultDiv.textContent = "AI not initialized.";
+            return;
+        }
+    
+        const prompt = `
+                Analyze the object in the image. Search for the primary object in the image and try to ignore secondary objects/people.
+                Identify what it is and determine which bin it should go into. 
+                Use standard municipal recycling guidelines for North America (General Waste, Recycling, Compost) (non-contaminated paper, plastic, metal are recyclable).
+                
+                Respond ONLY with a JSON object that strictly adheres to the provided schema.
+            `;
+        try {
+            const response = await window.ai.models.generateContent({
+                model: "gemini-2.5-flash", 
+                contents: [
+                    { role: "user", parts: [
+                        // This is how you send the image data to Gemini
+                        {
+                            inlineData: {
+                                data: base64Image,
+                                mimeType: mimeType
+                            }
+                        },
+                        { text: prompt }
+                    ]}
+                ],
+                config: {
+                    // FORCE the output to be JSON
+                    responseMimeType: "application/json",
+                    // DEFINE the structure of the JSON we want
+                    responseSchema: {
+                        type: "object",
+                        properties: {
+                            object_identified: { type: "string", description: "Clear name of the object." },
+                            // Use an 'enum' to ensure the output is one of these three exact values
+                            bin_destination: { type: "string", enum: ["RECYCLING", "COMPOST", "TRASH"], description: "The correct disposal bin." },
+                            reasoning: { type: "string", description: "A brief, one-sentence explanation for the bin choice." }
+                        },
+                        required: ["object_identified", "bin_destination", "reasoning"]
+                    }
+                }
+            });
+
+            // 3. Process the Response
+            const jsonText = response.text.trim();
+            const result = JSON.parse(jsonText);
+            
+            // 4. Call the function to update the UI
+            displayResults(result);
+
+    } catch (error) {
+        console.error("Gemini API Error:", error);
+        if (resultDiv) {
+            resultDiv.textContent = `Error during analysis. Details: ${error.message}`;
+        }
+    }
+    }
+
+    function displayResults(result) {
+        if (resultDiv) {
+            resultDiv.innerHTML = `
+                <h2>Results:</h2>
+                <p><strong>Object:</strong> ${result.object_identified}</p>
+                <p><strong>Bin:</strong> ${result.bin_destination}</p>
+                <p><strong>Reasoning:</strong> ${result.reasoning}</p>
+            `;
+        }
+    }
+</script>
 </body>
 </html>
