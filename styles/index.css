@@ -1,0 +1,40 @@
+
+        h1{
+            font-family: sans-serif;
+            color: rgb(22, 23, 24);
+        }
+        body{
+            margin: 50px;
+            background-color:rgb(112, 112, 112)
+        }
+
+        #videoElement{
+            width:500px;
+            height:375px;
+            background-color: rgb(71, 63, 63);
+            transition: transform 0.15s ease, filter 0.15s ease;
+            transform-origin: center center;
+        }
+        #container{
+            margin: 0px auto;
+            width: 500px;
+            height: 375px;
+            border: 10px rgb(205, 31, 221) solid;
+        }
+        .scan-button {
+        font-size: 1.5rem;
+        color: #fafafa;
+        text-transform: uppercase;
+        padding: 10px 20px;
+        border-radius: 10px;
+        border: 2px solid #fafafa;
+        background: #252525;
+        box-shadow: 3px 3px #fafafa;
+        cursor: pointer;
+        margin: 35px 0;
+        }
+
+        .scan-button:active {
+        box-shadow: none;
+        transform: translate(3px, 3px);
+        }
