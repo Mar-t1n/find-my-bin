@@ -49,6 +49,9 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: fixed;
+    right: 20px;
+    top: 50px;
 }
 
 .scan-button-container{

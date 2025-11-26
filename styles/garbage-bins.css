@@ -1,0 +1,37 @@
+.bins-container{
+    display:flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+    flex-direction:row;
+    gap: 5px;
+    position: fixed;
+    bottom: -80px;
+    left: 20px;
+}
+
+.recycling-bin-container, .garbage-bin-container, .green-bin-container{
+    width: 320px;
+    height: 320px;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.closed-recycling-bin, .open-recycling-bin,
+.closed-garbage-bin, .open-garbage-bin,
+.closed-green-bin, .open-green-bin {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.open-recycling-bin, .open-garbage-bin, .open-green-bin {
+    transform: scale(1.15);
+}
+
+.disappear{
+    display: none;
+}
