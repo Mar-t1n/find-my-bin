@@ -8,12 +8,25 @@
     <script type="module" src="AI-handling.js"></script>
 </head>
 <body>
-    <div id="container">
-        <video autoplay="true" id="videoElement"></video>
-        <canvas id="canvasElement"> </canvas>
+    <video id="backgroundVideo" autoplay loop muted playsinline>
+        <source src="images/paperCrumble.mp4" type="video/mp4">
+    </video>
+    <div class="camera-section">
+        <div id="container">
+            <video autoplay="true" id="videoElement"></video>
+            <canvas id="canvasElement" style="display: none;"> </canvas>
+        </div>
+        <div class="scan-button-container">
+            <div class="scan-button" id="scan-button"><span>SCAN</span></div>
+        </div>
     </div>
 
-    <button class="scan-button" id="scanBtn">Scan</button>
+    <div id="bins-container" class="bins-container">
+        <div class="recycling-bin">
+            <img src="images/recyclebinClosed.png" alt="Recycling Bin" />
+        </div>
+    </div>
+
     <div id="result"></div>
 
     <script type="module">
@@ -23,7 +36,7 @@
     const resultDiv = document.getElementById('result');
     let video = document.querySelector("#videoElement");
     const canvas = document.getElementById('canvasElement');
-    const scanBtn = document.getElementById('scanBtn');
+    const scanBtn = document.getElementById('scan-button');
 
     scanBtn.addEventListener('click', handleScan);
 
@@ -46,19 +59,18 @@
             console.log("getUserMedia not supported on your browser!");
         }
     function handleScan(){
-        const ctx = canvas.getContext('2d');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        console.log("Scan Worked! I hope!")
+        // const ctx = canvas.getContext('2d');
+        // canvas.width = video.videoWidth;
+        // canvas.height = video.videoHeight;
+        // ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
  
-        //convert the canvas to a Base64 String
-        const fullDataURL = canvas.toDataURL('image/jpeg');
-        const imageBase64 = fullDataURL.split(',')[1];
-        // MIME type specifies the file format (PNG image in this case)
-        const mimeType = 'image/jpeg';
+        // //convert the canvas to a Base64 String
+        // const fullDataURL = canvas.toDataURL('image/jpeg');
+        // const imageBase64 = fullDataURL.split(',')[1];
+        // // MIME type specifies the file format (PNG image in this case)
+        // const mimeType = 'image/jpeg';
 
-        findBin(imageBase64, mimeType, resultDiv, displayResults);
+        // findBin(imageBase64, mimeType, resultDiv, displayResults);
     }
     function displayResults(result) {
         if (resultDiv) {
