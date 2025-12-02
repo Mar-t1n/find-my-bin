@@ -14,6 +14,9 @@
     </video>
     <div class="camera-section">
         <div id="container">
+            <video id="paper-ball-video" muted playsinline>
+                <source src="images/crumple-paper-ball.webm" type="video/webm">
+            </video>
             <video autoplay="true" id="videoElement"></video>
             <canvas id="canvasElement" style="display: none;"> </canvas>
         </div>
@@ -37,6 +40,8 @@
         </div>
     </div>
 
+    <img id="flying-paper-ball" src="images/paper-ball (2).png" style="display: none;" />
+
     <div id="result"></div>
 
     <script type="module">
@@ -48,6 +53,7 @@
     let video = document.querySelector("#videoElement");
     const canvas = document.getElementById('canvasElement');
     const scanBtn = document.getElementById('scan-button');
+    const paperBallVideo = document.getElementById('paper-ball-video');
 
     scanBtn.addEventListener('click', handleScan);
 
@@ -70,32 +76,82 @@
             console.log("getUserMedia not supported on your browser!");
         }
     function handleScan(){
+        console.log('Scan button clicked!');
+        
+        // Play paper crumple animation
+        paperBallVideo.currentTime = 0;
+        paperBallVideo.classList.add('playing');
+        paperBallVideo.play();
+        
+        // Hide animation when it ends
+        paperBallVideo.onended = () => {
+            paperBallVideo.classList.remove('playing');
+        };
+        
+        // Capture webcam image and send to AI
         const ctx = canvas.getContext('2d');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
  
-        //convert the canvas to a Base64 String
         const fullDataURL = canvas.toDataURL('image/jpeg');
         const imageBase64 = fullDataURL.split(',')[1];
-        // MIME type specifies the file format (PNG image in this case)
         const mimeType = 'image/jpeg';
 
         findBin(imageBase64, mimeType, resultDiv, displayResults);
     }
+    
+    function dropPaperBall(binType) {
+        const flyingBall = document.getElementById('flying-paper-ball');
+        const binPositions = {
+            'RECYCLING': document.getElementById('closed-recycling-bin'),
+            'TRASH': document.getElementById('closed-garbage-bin'),
+            'COMPOST': document.getElementById('closed-green-bin')
+        };
+        
+        const targetBin = binPositions[binType.toUpperCase()];
+        if (!targetBin) return;
+        
+        const binRect = targetBin.getBoundingClientRect();
+        
+        // Position ball above screen
+        flyingBall.style.display = 'block';
+        flyingBall.style.left = (binRect.left + binRect.width / 2 - 50) + 'px';
+        flyingBall.style.top = '-300px';
+        flyingBall.style.transition = 'none';
+        
+        // Force reflow
+        flyingBall.offsetHeight;
+        
+        // Animate to bin
+        flyingBall.style.transition = 'all 1.2s ease-in';
+        flyingBall.style.top = (binRect.top + binRect.height / 2 - 50) + 'px';
+        
+        // Hide after animation
+        setTimeout(() => {
+            flyingBall.style.display = 'none';
+        }, 1200);
+    }
+    
     function displayResults(result) {
         if (resultDiv) {
-            openBin(result.bin_destination);
-            setTimeout(() => {
-            closeBin(result.bin_destination);
-            }, 2000);
-
             resultDiv.innerHTML = `
                 <h2>Results:</h2>
                 <p><strong>Object:</strong> ${result.object_identified}</p>
                 <p><strong>Bin:</strong> ${result.bin_destination}</p>
                 <p><strong>Reasoning:</strong> ${result.reasoning}</p>
             `;
+            
+            // Drop paper ball into the correct bin
+            dropPaperBall(result.bin_destination);
+            
+            // Open bin
+            openBin(result.bin_destination);
+            
+            // Close bin after animation
+            setTimeout(() => {
+                closeBin(result.bin_destination);
+            }, 1300);
         }
     }
 </script>
