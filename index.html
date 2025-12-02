@@ -41,7 +41,7 @@
 
     <script type="module">
         import { findBin } from './AI-handling.js';
-        import {openTheBins, closeTheBins} from './garbage-bins.js';
+        import { openBin, closeBin } from './garbage-bins.js';
         
         // Initialize variables
     const resultDiv = document.getElementById('result');
@@ -70,25 +70,26 @@
             console.log("getUserMedia not supported on your browser!");
         }
     function handleScan(){
-        openTheBins();
-        setTimeout(() => {
-            closeTheBins();
-        }, 2000);
-        // const ctx = canvas.getContext('2d');
-        // canvas.width = video.videoWidth;
-        // canvas.height = video.videoHeight;
-        // ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const ctx = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
  
-        // //convert the canvas to a Base64 String
-        // const fullDataURL = canvas.toDataURL('image/jpeg');
-        // const imageBase64 = fullDataURL.split(',')[1];
-        // // MIME type specifies the file format (PNG image in this case)
-        // const mimeType = 'image/jpeg';
+        //convert the canvas to a Base64 String
+        const fullDataURL = canvas.toDataURL('image/jpeg');
+        const imageBase64 = fullDataURL.split(',')[1];
+        // MIME type specifies the file format (PNG image in this case)
+        const mimeType = 'image/jpeg';
 
-        // findBin(imageBase64, mimeType, resultDiv, displayResults);
+        findBin(imageBase64, mimeType, resultDiv, displayResults);
     }
     function displayResults(result) {
         if (resultDiv) {
+            openBin(result.bin_destination);
+            setTimeout(() => {
+            closeBin(result.bin_destination);
+            }, 2000);
+
             resultDiv.innerHTML = `
                 <h2>Results:</h2>
                 <p><strong>Object:</strong> ${result.object_identified}</p>
